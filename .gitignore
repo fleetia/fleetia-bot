@@ -1,0 +1,8 @@
+node_modules/
+cdk.out/
+cdk.context.json
+.env*
+*.pem
+*.local.json
+coverage/
+artifacts/

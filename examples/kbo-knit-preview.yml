@@ -1,0 +1,23 @@
+name: "KBO Knit: Preview"
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+  packages: read
+  id-token: write
+
+jobs:
+  preview:
+    if: github.event_name == 'pull_request_target' || github.event.issue.pull_request
+    uses: fleetia/fleetia-bot/.github/workflows/preview.yml@REPLACE_WITH_VERIFIED_SHA
+    with:
+      bot-ref: REPLACE_WITH_VERIFIED_SHA
+    secrets:
+      FLEETIA_BOT_PRIVATE_KEY: ${{ secrets.FLEETIA_BOT_PRIVATE_KEY }}

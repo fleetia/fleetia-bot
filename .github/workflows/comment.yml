@@ -1,0 +1,77 @@
+name: Fleetia preview comment
+
+on:
+  workflow_call:
+    inputs:
+      bot-ref:
+        required: true
+        type: string
+      branch-id:
+        required: true
+        type: string
+      request:
+        required: true
+        type: string
+      status:
+        required: true
+        type: string
+      detail:
+        required: true
+        type: string
+      deployed-sha:
+        default: ""
+        type: string
+    secrets:
+      FLEETIA_BOT_PRIVATE_KEY:
+        required: true
+
+permissions: {}
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    concurrency:
+      group: fleetia-preview-${{ github.repository_id }}-${{ inputs.branch-id }}
+      cancel-in-progress: false
+      queue: max
+    steps:
+      - name: Check out trusted bot
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          repository: fleetia/fleetia-bot
+          ref: ${{ inputs.bot-ref }}
+          path: .fleetia-bot
+          persist-credentials: false
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 11.25.0
+          package_json_file: .fleetia-bot/package.json
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "24"
+      - name: Install bot dependencies
+        working-directory: .fleetia-bot
+        run: pnpm install --frozen-lockfile
+      - name: Create comment token
+        id: app-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ vars.FLEETIA_BOT_APP_ID }}
+          private-key: ${{ secrets.FLEETIA_BOT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-issues: write
+      - name: Update sticky PR comment
+        working-directory: .fleetia-bot
+        env:
+          REQUEST: ${{ inputs.request }}
+          GITHUB_TOKEN: ${{ github.token }}
+          BOT_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPORT_STATUS: ${{ inputs.status }}
+          REPORT_DETAIL: ${{ inputs.detail }}
+          REPORT_DEPLOYED_SHA: ${{ inputs.deployed-sha }}
+        run: pnpm bot report

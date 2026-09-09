@@ -1,0 +1,32 @@
+{
+  "name": "@fleetia/fleetia-bot",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "bot": "tsx src/cli.ts",
+    "cdk": "cdk",
+    "synth": "cdk synth"
+  },
+  "dependencies": {
+    "@aws-sdk/client-acm": "3.1097.0",
+    "@aws-sdk/client-cloudformation": "3.1097.0",
+    "@aws-sdk/client-cloudfront": "3.1097.0",
+    "@aws-sdk/client-route-53": "3.1097.0",
+    "@aws-sdk/client-s3": "3.1097.0",
+    "@aws-sdk/client-sts": "3.1097.0",
+    "aws-cdk-lib": "2.262.1",
+    "constructs": "10.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "aws-cdk": "2.1133.0",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.10"
+  }
+}
