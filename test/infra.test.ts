@@ -4,17 +4,42 @@ import { describe, expect, it } from 'vitest';
 
 import { createPreviewStacks } from '../infra/preview-stack.js';
 
-function synthesize(): { preview: Template; certificate: Template } {
+function synthesize(oidcSubject = 'repo:fleetia/kbo-knit:ref:refs/heads/main'): { preview: Template; certificate: Template } {
   const app = new App();
   const stacks = createPreviewStacks(app, {
     account: '123456789012', region: 'ap-northeast-2', hostedZoneId: 'ZEXAMPLE',
     repository: 'fleetia/kbo-knit', project: 'kbo-knit', domain: 'kbo-knit.star-light.space',
     oidcProviderArn: 'arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com',
+    oidcSubject,
   });
   return { preview: Template.fromStack(stacks.previewStack), certificate: Template.fromStack(stacks.certificateStack) };
 }
 
 describe('preview infrastructure', () => {
+  it('preserves the explicitly verified immutable OIDC subject in the exact trust condition', () => {
+    const oidcSubject = 'repo:fleetia@123456/kbo-knit@456789:ref:refs/heads/main';
+    const { preview } = synthesize(oidcSubject);
+    preview.hasResourceProperties('AWS::IAM::Role', {
+      AssumeRolePolicyDocument: { Statement: Match.arrayWith([Match.objectLike({
+        Condition: { StringEquals: {
+          'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
+          'token.actions.githubusercontent.com:sub': oidcSubject,
+        } },
+      })]) },
+    });
+  });
+
+  it.each([
+    '', 'repo:fleetia/kbo-knit:*', 'repo:other/kbo-knit:ref:refs/heads/main',
+    'repo:fleetia/other:ref:refs/heads/main', 'repo:fleetia/kbo-knit:ref:refs/heads/feature',
+    'repo:fleetia/kbo-knit:pull_request', 'repo:fleetia/kbo-knit:environment:production',
+    'repo:fleetia@123456/kbo-knit:ref:refs/heads/main',
+    'repo:fleetia/kbo-knit@456789:ref:refs/heads/main',
+    'repo:fleetia@*/kbo-knit@456789:ref:refs/heads/main',
+  ])('rejects an unscoped or mismatched OIDC subject %s', (subject) => {
+    expect(() => synthesize(subject)).toThrow('OIDC subject');
+  });
+
   it('uses a retained private bucket with signed OAC and denies CloudFront access to deployment controls', () => {
     const { preview } = synthesize();
     preview.hasResource('AWS::S3::Bucket', {

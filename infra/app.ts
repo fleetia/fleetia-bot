@@ -17,6 +17,7 @@ const project = readContext('project', 'kbo-knit');
 const domain = readContext('domain', 'kbo-knit.star-light.space');
 const repository = readContext('repository', 'fleetia/kbo-knit');
 const oidcProviderArn = readContext('oidcProviderArn');
+const oidcSubject = readContext('oidcSubject');
 if (!/^\d{12}$/.test(account) || !/^[a-z0-9-]+$/.test(project)
   || !/^[a-z0-9-]+\.star-light\.space$/.test(domain)
   || !/^[\w.-]+\/[\w.-]+$/.test(repository)
@@ -24,7 +25,7 @@ if (!/^\d{12}$/.test(account) || !/^[a-z0-9-]+$/.test(project)
   throw new Error('Invalid preview infrastructure context');
 }
 createPreviewStacks(app, {
-  account, project, domain, repository, oidcProviderArn,
+  account, project, domain, repository, oidcProviderArn, oidcSubject,
   hostedZoneId: readContext('hostedZoneId').replace(/^\/hostedzone\//, ''),
   region: readContext('region', 'ap-northeast-2'),
 });

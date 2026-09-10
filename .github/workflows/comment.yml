@@ -64,7 +64,7 @@ jobs:
           private-key: ${{ secrets.FLEETIA_BOT_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
-          permission-issues: write
+          permission-pull-requests: write
       - name: Update sticky PR comment
         working-directory: .fleetia-bot
         env:

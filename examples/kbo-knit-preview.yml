@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   preview:
-    if: github.event_name == 'pull_request_target' || github.event.issue.pull_request
+    if: github.event_name == 'pull_request_target' || (github.event.issue.pull_request && github.event.comment.user.type != 'Bot')
     uses: fleetia/fleetia-bot/.github/workflows/preview.yml@REPLACE_WITH_VERIFIED_SHA
     with:
       bot-ref: REPLACE_WITH_VERIFIED_SHA

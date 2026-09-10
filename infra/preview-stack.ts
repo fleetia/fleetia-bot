@@ -17,6 +17,7 @@ export type PreviewConfig = {
   domain: string;
   project: string;
   oidcProviderArn: string;
+  oidcSubject: string;
 };
 
 export function createRouterCode(domain: string): string {
@@ -30,6 +31,10 @@ export function createPreviewStacks(app: App, config: PreviewConfig): {
   certificateStack: Stack;
   previewStack: Stack;
 } {
+  const subject = /^repo:([^:@/]+)(?:@([1-9]\d*))?\/([^:@/]+)(?:@([1-9]\d*))?:ref:refs\/heads\/main$/.exec(config.oidcSubject);
+  if (!subject || `${subject[1]}/${subject[3]}` !== config.repository || Boolean(subject[2]) !== Boolean(subject[4])) {
+    throw new Error('OIDC subject must identify the configured repository and main branch exactly');
+  }
   const certificateStack = new Stack(app, `${config.project}-preview-certificate`, {
     env: { account: config.account, region: 'us-east-1' },
     crossRegionReferences: true,
@@ -112,7 +117,7 @@ export function createPreviewStacks(app: App, config: PreviewConfig): {
     assumedBy: new iam.OpenIdConnectPrincipal(provider, {
       StringEquals: {
         'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
-        'token.actions.githubusercontent.com:sub': `repo:${config.repository}:ref:refs/heads/main`,
+        'token.actions.githubusercontent.com:sub': config.oidcSubject,
       },
     }),
     maxSessionDuration: Duration.hours(1),

@@ -94,6 +94,7 @@ jobs:
         with:
           role-to-assume: ${{ vars.FLEETIA_PREVIEW_ROLE_ARN }}
           aws-region: ${{ vars.FLEETIA_AWS_REGION || 'ap-northeast-2' }}
+          retry-max-attempts: 3
       - name: Prepare deployment or handle status and deletion
         id: prepare
         working-directory: .fleetia-bot
@@ -212,6 +213,7 @@ jobs:
         with:
           role-to-assume: ${{ vars.FLEETIA_PREVIEW_ROLE_ARN }}
           aws-region: ${{ vars.FLEETIA_AWS_REGION || 'ap-northeast-2' }}
+          retry-max-attempts: 3
       - name: Revalidate request and publish
         id: publish
         working-directory: .fleetia-bot
@@ -274,4 +276,3 @@ jobs:
       deployed-sha: ${{ needs.publish.outputs.deployed_sha || needs.prepare.outputs.deployed_sha }}
     secrets:
       FLEETIA_BOT_PRIVATE_KEY: ${{ secrets.FLEETIA_BOT_PRIVATE_KEY }}
-
