@@ -1,3 +1,8 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/icon-dark.svg">
+  <img src=".github/assets/icon.svg" alt="Fleetia Bot" width="64" height="64">
+</picture>
+
 # Fleetia Bot
 
 Fleetia Bot은 허용된 사용자의 PR 댓글을 받아 KBO Knit의 branch preview를 배포합니다. GitHub Actions가 빌드와 AWS 배포를 실행하고 GitHub App은 진행 상황과 결과 댓글을 작성합니다. 초기 연결과 장애 복구는 [운영 절차](docs/operations.md)를 참고하세요.
